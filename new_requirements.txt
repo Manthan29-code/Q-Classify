@@ -1,0 +1,11 @@
+# Q-Classify - NEW Dependencies
+# Install these packages to enable new features
+# Run: pip install -r new_requirements.txt
+
+# NEW - Required for LCEL (LangChain Expression Language) pattern
+langchain-core>=0.2.0           # Core abstractions: PromptTemplate, StrOutputParser
+langchain-community>=0.2.0      # Community integrations and tools
+
+# UPDATED - Newer versions for compatibility with LCEL
+langchain>=0.2.0                # Updated from 0.1.0 - includes LCEL support
+langchain-google-genai>=1.0.0   # Updated from 0.0.6 - compatible with langchain 0.2.x

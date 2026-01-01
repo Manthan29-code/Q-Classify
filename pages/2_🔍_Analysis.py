@@ -147,12 +147,14 @@ else:
     with col2:
         st.markdown(f"**Question Papers:** {len(st.session_state.question_papers)} file(s)")
     
-    if st.button("🔍 Analyze Questions", type="primary", use_container_width=True):
+    if st.button("🔍 Analyze Questions", type="primary", width="stretch"):
         st.session_state.is_processing = True
+        st.session_state.last_error = None
         
         # Progress tracking
         progress_bar = st.progress(0)
         status_text = st.empty()
+        error_container = st.empty()
         
         all_questions = []
         all_analyzed = []
@@ -183,16 +185,18 @@ else:
         # Process in batches for better performance
         batch_size = 10
         question_texts = [q['text'] for q in all_questions]
+        analysis_error = None
         
         for batch_start in range(0, len(question_texts), batch_size):
             batch_end = min(batch_start + batch_size, len(question_texts))
             batch = question_texts[batch_start:batch_end]
             
             try:
-                analysis_results = ai_analyzer.analyze_questions(
-                    batch,
-                    st.session_state.syllabus_text
-                )
+                with st.spinner(f"🤖 Analyzing batch {batch_start//batch_size + 1}..."):
+                    analysis_results = ai_analyzer.analyze_questions(
+                        batch,
+                        st.session_state.syllabus_text
+                    )
                 
                 # Merge with source info
                 for j, result in enumerate(analysis_results):
@@ -204,12 +208,40 @@ else:
                         all_analyzed.append(result)
                 
             except Exception as e:
-                st.error(f"Error analyzing batch: {str(e)}")
+                error_str = str(e)
+                # Parse specific error types
+                if "429" in error_str or "quota" in error_str.lower() or "rate" in error_str.lower():
+                    analysis_error = "🚫 **API Quota Exceeded**: Your API usage limit has been reached. Please wait a few minutes or check your Google Cloud quota."
+                elif "401" in error_str or "403" in error_str or "authentication" in error_str.lower() or "invalid" in error_str.lower():
+                    analysis_error = "🔑 **Authentication Error**: Invalid API key. Please check your GOOGLE_API_KEY in the .env file."
+                elif "timeout" in error_str.lower() or "timed out" in error_str.lower():
+                    analysis_error = "⏱️ **Timeout Error**: The request took too long. Please try again with fewer questions or check your internet connection."
+                elif "connection" in error_str.lower() or "network" in error_str.lower():
+                    analysis_error = "🌐 **Connection Error**: Unable to reach the API. Please check your internet connection."
+                else:
+                    analysis_error = f"❌ **Analysis Error**: {error_str}"
+                
+                st.session_state.last_error = analysis_error
+                break
             
             # Update progress
             progress = 0.3 + (batch_end / len(question_texts)) * 0.7
             progress_bar.progress(progress)
             status_text.text(f"🤖 Analyzed {batch_end}/{len(question_texts)} questions...")
+        
+        # Handle error with retry option
+        if analysis_error:
+            progress_bar.empty()
+            status_text.empty()
+            error_container.error(analysis_error)
+            st.session_state.is_processing = False
+            
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                if st.button("🔄 Retry Analysis", type="primary", width="stretch"):
+                    st.session_state.last_error = None
+                    st.rerun()
+            st.stop()
         
         # Complete
         progress_bar.progress(1.0)
@@ -220,6 +252,15 @@ else:
         st.session_state.is_processing = False
         
         st.rerun()
+
+# Show previous error with retry option
+if st.session_state.get('last_error') and not st.session_state.analysis_complete:
+    st.error(st.session_state.last_error)
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col2:
+        if st.button("🔄 Retry Analysis", type="primary", width="stretch", key="retry_prev"):
+            st.session_state.last_error = None
+            st.rerun()
 
 # ==================== RESULTS DISPLAY ====================
 if st.session_state.analysis_complete and st.session_state.questions_data:
@@ -358,7 +399,7 @@ if st.session_state.analysis_complete and st.session_state.questions_data:
     col1, col2 = st.columns(2)
     
     with col1:
-        if st.button("📥 Generate PDF Report", type="primary", use_container_width=True):
+        if st.button("📥 Generate PDF Report", type="primary", width="stretch"):
             with st.spinner("Generating PDF report..."):
                 try:
                     pdf_bytes = pdf_generator.generate_report(
@@ -372,7 +413,7 @@ if st.session_state.analysis_complete and st.session_state.questions_data:
                         data=pdf_bytes,
                         file_name="QClassify_Report.pdf",
                         mime="application/pdf",
-                        use_container_width=True
+                        width="stretch"
                     )
                 except Exception as e:
                     st.error(f"Error generating PDF: {str(e)}")
@@ -386,7 +427,7 @@ if st.session_state.analysis_complete and st.session_state.questions_data:
             data=json_data,
             file_name="QClassify_Data.json",
             mime="application/json",
-            use_container_width=True
+            width="stretch"
         )
 
 # Sidebar
@@ -406,9 +447,9 @@ with st.sidebar:
     
     st.markdown("---")
     st.markdown("### 🔗 Quick Links")
-    if st.button("📊 View Trends", use_container_width=True):
+    if st.button("📊 View Trends", width="stretch"):
         st.switch_page("pages/3_📊_Trend_Analysis.py")
-    if st.button("🔎 Search Questions", use_container_width=True):
+    if st.button("🔎 Search Questions", width="stretch"):
         st.switch_page("pages/4_🔎_Custom_Search.py")
 
 # Footer

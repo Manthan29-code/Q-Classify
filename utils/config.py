@@ -94,13 +94,26 @@ def init_session_state():
     # Error tracking
     if 'last_error' not in st.session_state:
         st.session_state.last_error = None
+    
+    if 'syllabus_path' not in st.session_state:
+        st.session_state.syllabus_path = None
 
 
 def clear_session_state():
-    """Clear all analysis data from session state"""
+    """Clear all analysis data from session state and delete uploaded files"""
+    # Delete uploaded files from disk
+    try:
+        for file in Config.UPLOADS_DIR.iterdir():
+            if file.is_file():
+                file.unlink()
+    except Exception as e:
+        print(f"Error deleting files: {e}")
+    
+    # Clear session state
     st.session_state.syllabus_file = None
     st.session_state.syllabus_text = None
     st.session_state.syllabus_chapters = []
+    st.session_state.syllabus_path = None
     st.session_state.question_papers = []
     st.session_state.analysis_results = None
     st.session_state.questions_data = []
@@ -110,6 +123,45 @@ def clear_session_state():
     st.session_state.is_processing = False
     st.session_state.analysis_complete = False
     st.session_state.last_error = None
+
+
+def restore_files_from_disk():
+    "Restore uploaded files from disk on page load "
+    from services.pdf_extractor import pdf_extractor
+    from utils.helpers import extract_year_from_filename
+    
+    # Check if files exist but session state is empty
+    if st.session_state.syllabus_text is None or not st.session_state.question_papers:
+        try:
+            for file in Config.UPLOADS_DIR.iterdir():
+                if file.is_file() and file.suffix.lower() == '.pdf':
+                    file_content = file.read_bytes()
+                    
+                    if file.name.startswith('syllabus_') and st.session_state.syllabus_text is None:
+                        extraction = pdf_extractor.extract_text(file_content, file.name)
+                        if extraction['success']:
+                            st.session_state.syllabus_file = file.name.replace('syllabus_', '')
+                            st.session_state.syllabus_text = extraction['text']
+                            st.session_state.syllabus_path = str(file)
+                    
+                    elif file.name.startswith('paper_') and not any(
+                        p['name'] == file.name.replace('paper_', '') 
+                        for p in st.session_state.question_papers
+                    ):
+                        extraction = pdf_extractor.extract_text(file_content, file.name)
+                        if extraction['success']:
+                            original_name = file.name.replace('paper_', '')
+                            year = extract_year_from_filename(original_name)
+                            st.session_state.question_papers.append({
+                                'name': original_name,
+                                'text': extraction['text'],
+                                'year': year,
+                                'pages': extraction['page_count'],
+                                'method': extraction['method'],
+                                'path': str(file)
+                            })
+        except Exception as e:
+            print(f"Error restoring files: {e}")
 
 
 def get_api_key():

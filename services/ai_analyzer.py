@@ -82,8 +82,8 @@ class AIAnalyzer:
         Returns:
             List of analyzed questions with chapter, concepts, difficulty
         """
-        from langchain.prompts import PromptTemplate
-        from langchain.chains import LLMChain
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
         
         # Create analysis prompt
         analysis_prompt = PromptTemplate(
@@ -128,10 +128,10 @@ Respond ONLY with the JSON object, no additional text."""
             f"Q{i+1}: {q}" for i, q in enumerate(questions)
         ])
         
-        # Run analysis
+        # Run analysis using LCEL
         try:
-            chain = LLMChain(llm=self.llm, prompt=analysis_prompt)
-            response = chain.run(syllabus=syllabus_text, questions=formatted_questions)
+            chain = analysis_prompt | self.llm | StrOutputParser()
+            response = chain.invoke({"syllabus": syllabus_text, "questions": formatted_questions})
             
             # Parse JSON response
             results = self._parse_json_response(response)
@@ -155,8 +155,8 @@ Respond ONLY with the JSON object, no additional text."""
         Returns:
             Dict with 'difficulty', 'reasoning', 'factors'
         """
-        from langchain.prompts import PromptTemplate
-        from langchain.chains import LLMChain
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
         
         difficulty_prompt = PromptTemplate(
             input_variables=["question", "syllabus"],
@@ -187,8 +187,8 @@ Respond ONLY with JSON."""
         )
         
         try:
-            chain = LLMChain(llm=self.llm, prompt=difficulty_prompt)
-            response = chain.run(question=question, syllabus=syllabus_context)
+            chain = difficulty_prompt | self.llm | StrOutputParser()
+            response = chain.invoke({"question": question, "syllabus": syllabus_context})
             return self._parse_json_response(response)
         except Exception as e:
             return {
@@ -201,8 +201,8 @@ Respond ONLY with JSON."""
         """
         Generate a concise summary of the syllabus for quick revision
         """
-        from langchain.prompts import PromptTemplate
-        from langchain.chains import LLMChain
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
         
         summary_prompt = PromptTemplate(
             input_variables=["syllabus"],
@@ -222,8 +222,8 @@ Use bullet points and clear formatting."""
         )
         
         try:
-            chain = LLMChain(llm=self.llm, prompt=summary_prompt)
-            return chain.run(syllabus=syllabus_text)
+            chain = summary_prompt | self.llm | StrOutputParser()
+            return chain.invoke({"syllabus": syllabus_text})
         except Exception as e:
             return f"Error generating summary: {str(e)}"
     
@@ -238,8 +238,8 @@ Use bullet points and clear formatting."""
         Returns:
             Dict with 'nodes', 'edges' for graph visualization
         """
-        from langchain.prompts import PromptTemplate
-        from langchain.chains import LLMChain
+        from langchain_core.prompts import PromptTemplate
+        from langchain_core.output_parsers import StrOutputParser
         
         concept_prompt = PromptTemplate(
             input_variables=["syllabus", "concepts"],
@@ -279,11 +279,11 @@ Respond ONLY with JSON."""
         unique_concepts = list(set([c for c in all_concepts if c]))
         
         try:
-            chain = LLMChain(llm=self.llm, prompt=concept_prompt)
-            response = chain.run(
-                syllabus=syllabus_text,
-                concepts=", ".join(unique_concepts)
-            )
+            chain = concept_prompt | self.llm | StrOutputParser()
+            response = chain.invoke({
+                "syllabus": syllabus_text,
+                "concepts": ", ".join(unique_concepts)
+            })
             return self._parse_json_response(response)
         except Exception as e:
             # Return basic structure on error

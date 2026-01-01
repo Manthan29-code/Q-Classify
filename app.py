@@ -172,7 +172,7 @@ st.markdown("""
 # CTA Button
 col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
-    if st.button("🚀 Get Started", use_container_width=True, type="primary"):
+    if st.button("🚀 Get Started", width="stretch", type="primary"):
         st.switch_page("pages/1_📤_Upload_Files.py")
 
 st.markdown("<br>", unsafe_allow_html=True)

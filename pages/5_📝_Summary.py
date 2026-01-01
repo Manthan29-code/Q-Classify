@@ -105,17 +105,47 @@ if st.session_state.syllabus_summary:
         st.session_state.syllabus_summary = None
         st.rerun()
 else:
-    if st.button("✨ Generate AI Summary", type="primary", use_container_width=True):
+    if st.button("✨ Generate AI Summary", type="primary", width="stretch"):
         with st.spinner("🤖 AI is analyzing the syllabus..."):
             try:
                 summary = ai_analyzer.generate_syllabus_summary(syllabus_text)
                 st.session_state.syllabus_summary = summary
+                st.session_state.last_error = None
                 st.rerun()
             except Exception as e:
-                st.error(f"Error generating summary: {str(e)}")
+                error_str = str(e)
+                # Parse specific error types
+                if "429" in error_str or "quota" in error_str.lower() or "rate" in error_str.lower():
+                    error_msg = "🚫 **API Quota Exceeded**: Your API usage limit has been reached. Please wait a few minutes or check your Google Cloud quota."
+                elif "401" in error_str or "403" in error_str or "authentication" in error_str.lower():
+                    error_msg = "🔑 **Authentication Error**: Invalid API key. Please check your GOOGLE_API_KEY in the .env file."
+                elif "timeout" in error_str.lower() or "timed out" in error_str.lower():
+                    error_msg = "⏱️ **Timeout Error**: The request took too long. Please try again."
+                elif "connection" in error_str.lower() or "network" in error_str.lower():
+                    error_msg = "🌐 **Connection Error**: Unable to reach the API. Please check your internet connection."
+                else:
+                    error_msg = f"❌ **Error**: {error_str}"
+                
+                st.session_state.last_error = error_msg
+                st.error(error_msg)
+                
+                col1, col2, col3 = st.columns([1, 1, 1])
+                with col2:
+                    if st.button("🔄 Retry", type="primary", width="stretch"):
+                        st.session_state.last_error = None
+                        st.rerun()
                 st.stop()
     else:
-        st.info("👆 Click the button above to generate an AI-powered summary of your syllabus")
+        # Show previous error with retry option
+        if st.session_state.get('last_error'):
+            st.error(st.session_state.last_error)
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                if st.button("🔄 Retry", type="primary", width="stretch"):
+                    st.session_state.last_error = None
+                    st.rerun()
+        else:
+            st.info("👆 Click the button above to generate an AI-powered summary of your syllabus")
         st.stop()
 
 # ==================== DISPLAY SUMMARY ====================
@@ -219,7 +249,7 @@ if st.session_state.syllabus_summary:
             data=summary,
             file_name="QClassify_Summary.txt",
             mime="text/plain",
-            use_container_width=True
+            width="stretch"
         )
     
     with col2:
@@ -236,7 +266,7 @@ if st.session_state.syllabus_summary:
             data=md_content,
             file_name="QClassify_Summary.md",
             mime="text/markdown",
-            use_container_width=True
+            width="stretch"
         )
 
 # ==================== SYLLABUS PREVIEW ====================
@@ -259,7 +289,7 @@ with st.sidebar:
         st.markdown("### 📈 Analysis Status")
         st.markdown(f"✅ {len(st.session_state.questions_data)} questions analyzed")
         
-        if st.button("🗺️ View Concept Map", use_container_width=True):
+        if st.button("🗺️ View Concept Map", width="stretch"):
             st.switch_page("pages/6_🗺️_Concept_Map.py")
 
 # Footer

@@ -1,0 +1,10 @@
+# Q-Classify - Packages to Remove
+# These packages are no longer needed or have been replaced
+# Run: pip uninstall -r del_requirements.txt
+
+# No packages to remove at this time
+# All current packages are still in use
+
+# Note: The following imports were migrated to new packages:
+# - LLMChain (from langchain.chains) -> LCEL pattern (prompt | llm)
+# - PromptTemplate (from langchain.prompts) -> from langchain_core.prompts

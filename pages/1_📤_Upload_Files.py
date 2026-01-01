@@ -10,7 +10,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.config import init_session_state, Config, is_api_configured
+from utils.config import init_session_state, Config, is_api_configured, restore_files_from_disk, clear_session_state
 from utils.helpers import extract_year_from_filename, format_file_size, clean_text
 from services.pdf_extractor import pdf_extractor
 from components.header import render_page_header, render_api_warning
@@ -25,6 +25,9 @@ st.set_page_config(
 
 # Initialize session state
 init_session_state()
+
+# Restore files from disk on page load
+restore_files_from_disk()
 
 # Custom CSS
 st.markdown("""
@@ -112,8 +115,13 @@ with col1:
                 extraction = pdf_extractor.extract_text(file_content, syllabus_file.name)
             
             if extraction['success']:
+                # Save file to disk for persistence
+                save_path = Config.UPLOADS_DIR / f"syllabus_{syllabus_file.name}"
+                save_path.write_bytes(file_content)
+                
                 st.session_state.syllabus_file = syllabus_file.name
                 st.session_state.syllabus_text = extraction['text']
+                st.session_state.syllabus_path = str(save_path)  # Store path for restoration
                 
                 st.markdown(f"""
                 <div class="status-card">
@@ -167,12 +175,17 @@ with col2:
                 if extraction['success']:
                     year = extract_year_from_filename(qf.name)
                     
+                    # Save file to disk for persistence
+                    save_path = Config.UPLOADS_DIR / f"paper_{qf.name}"
+                    save_path.write_bytes(file_content)
+                    
                     papers_processed.append({
                         'name': qf.name,
                         'text': extraction['text'],
                         'year': year,
                         'pages': extraction['page_count'],
-                        'method': extraction['method']
+                        'method': extraction['method'],
+                        'path': str(save_path)  # Store path for restoration
                     })
         
         if papers_processed:
@@ -245,18 +258,18 @@ col1, col2, col3 = st.columns([1, 2, 1])
 with col2:
     # Analyze button
     if st.session_state.syllabus_text and st.session_state.question_papers and api_ready:
-        if st.button("🚀 Start Analysis", use_container_width=True, type="primary"):
+        if st.button("🚀 Start Analysis", width="stretch", type="primary"):
             st.switch_page("pages/2_🔍_Analysis.py")
     else:
-        st.button("🚀 Start Analysis", use_container_width=True, disabled=True)
+        st.button("🚀 Start Analysis", width="stretch", disabled=True)
         st.caption("Upload syllabus and at least one question paper to proceed")
 
 # Clear data button
 with st.sidebar:
     st.markdown("### ⚙️ Options")
     if st.button("🗑️ Clear All Data"):
-        from utils.config import clear_session_state
         clear_session_state()
+        st.success("✅ All data and files cleared!")
         st.rerun()
     
     st.markdown("---")

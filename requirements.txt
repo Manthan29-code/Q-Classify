@@ -12,9 +12,11 @@ PyPDF2>=3.0.1                   # Fallback: Simple text extraction
 reportlab>=4.0.8                # Professional PDF report generation
 
 # AI/LLM Integration
-langchain>=0.1.0                # LLM orchestration framework
-langchain-google-genai>=0.0.6  # Google Gemini integration
-google-generativeai>=0.3.2     # Direct Gemini API access
+langchain>=0.2.0                # LLM orchestration framework (UPDATED for LCEL)
+langchain-core>=0.2.0           # Core abstractions - PromptTemplate, OutputParsers (NEW)
+langchain-community>=0.2.0      # Community integrations (NEW)
+langchain-google-genai>=1.0.0   # Google Gemini integration (UPDATED)
+google-generativeai>=0.3.2      # Direct Gemini API access
 
 # Environment & Configuration
 python-dotenv>=1.0.0            # .env file management

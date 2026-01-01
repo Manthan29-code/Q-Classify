@@ -153,7 +153,7 @@ with col1:
             height=400
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.info("No concept data available")
 
@@ -183,7 +183,7 @@ with col2:
             height=400
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.info("No chapter data available")
 
@@ -224,7 +224,7 @@ if difficulty_data:
             height=300
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     
     with col2:
         total = sum(difficulty_data.values())
@@ -289,7 +289,7 @@ if yearly_data:
             height=400
         )
         
-        st.plotly_chart(fig, use_container_width=True)
+        st.plotly_chart(fig, width="stretch")
     else:
         st.info("Need multiple years of data for yearly trend analysis")
 
@@ -345,9 +345,9 @@ with st.sidebar:
             st.markdown(f"- {concept} ({count})")
     
     st.markdown("---")
-    if st.button("🔍 Search Questions", use_container_width=True):
+    if st.button("🔍 Search Questions", width="stretch"):
         st.switch_page("pages/4_🔎_Custom_Search.py")
-    if st.button("📝 View Summary", use_container_width=True):
+    if st.button("📝 View Summary", width="stretch"):
         st.switch_page("pages/5_📝_Summary.py")
 
 # Footer

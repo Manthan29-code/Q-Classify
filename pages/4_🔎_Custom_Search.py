@@ -108,7 +108,7 @@ with col1:
     )
 
 with col2:
-    search_button = st.button("Search", type="primary", use_container_width=True)
+    search_button = st.button("Search", type="primary", width="stretch")
 
 # Filters
 st.markdown("#### Filters")
@@ -290,7 +290,7 @@ if results:
     
     # Export results
     st.markdown("---")
-    if st.button("📥 Export Search Results", use_container_width=False):
+    if st.button("📥 Export Search Results", width="content"):
         import json
         json_data = json.dumps(results, indent=2, default=str)
         st.download_button(

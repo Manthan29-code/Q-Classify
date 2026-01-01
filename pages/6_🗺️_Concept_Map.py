@@ -83,7 +83,7 @@ st.markdown("### 🕸️ Concept Relationship Graph")
 
 # Check if graph data exists
 if not st.session_state.concept_graph:
-    if st.button("✨ Generate Concept Map", type="primary", use_container_width=True):
+    if st.button("✨ Generate Concept Map", type="primary", width="stretch"):
         with st.spinner("🤖 AI is mapping concept relationships..."):
             try:
                 # Check API
@@ -95,15 +95,39 @@ if not st.session_state.concept_graph:
                     questions_data
                 )
                 st.session_state.concept_graph = graph_data
+                st.session_state.last_error = None
                 st.rerun()
             except Exception as e:
-                st.error(f"Error generating concept map: {str(e)}")
+                error_str = str(e)
+                # Parse specific error types
+                if "429" in error_str or "quota" in error_str.lower() or "rate" in error_str.lower():
+                    error_msg = "🚫 **API Quota Exceeded**: Your API usage limit has been reached. Please wait a few minutes or check your Google Cloud quota."
+                elif "401" in error_str or "403" in error_str or "authentication" in error_str.lower():
+                    error_msg = "🔑 **Authentication Error**: Invalid API key. Please check your GOOGLE_API_KEY in the .env file."
+                elif "timeout" in error_str.lower() or "timed out" in error_str.lower():
+                    error_msg = "⏱️ **Timeout Error**: The request took too long. Please try again."
+                elif "connection" in error_str.lower() or "network" in error_str.lower():
+                    error_msg = "🌐 **Connection Error**: Unable to reach the API. Please check your internet connection."
+                else:
+                    error_msg = f"❌ **Error**: {error_str}"
+                
+                st.warning(error_msg)
+                st.info("📊 Generating basic concept map from analyzed questions instead...")
+                
                 # Fallback: generate basic graph from questions data
-                st.info("Generating basic concept map from analyzed questions...")
                 graph_data = generate_basic_graph(questions_data)
                 st.session_state.concept_graph = graph_data
                 st.rerun()
     else:
+        # Show previous error with retry option
+        if st.session_state.get('last_error'):
+            st.error(st.session_state.last_error)
+            col1, col2, col3 = st.columns([1, 1, 1])
+            with col2:
+                if st.button("🔄 Retry", type="primary", width="stretch"):
+                    st.session_state.last_error = None
+                    st.rerun()
+        
         # Show basic visualization while waiting
         st.info("👆 Click the button above to generate an AI-powered concept map")
         
@@ -250,7 +274,7 @@ if st.session_state.concept_graph:
         
         # Graph configuration
         config = Config(
-            width='100%',
+            width=1200,
             height=600,
             directed=True,
             physics=True,
@@ -263,9 +287,7 @@ if st.session_state.concept_graph:
         )
         
         # Display graph
-        st.markdown('<div class="map-container">', unsafe_allow_html=True)
         agraph(nodes=nodes, edges=edges, config=config)
-        st.markdown('</div>', unsafe_allow_html=True)
         
         # Legend
         st.markdown("#### 📍 Legend")
@@ -379,7 +401,7 @@ if st.session_state.concept_graph:
                 )
             )
             
-            st.plotly_chart(fig, use_container_width=True)
+            st.plotly_chart(fig, width="stretch")
             
         except Exception as e:
             st.error(f"Could not create visualization: {str(e)}")
@@ -476,7 +498,7 @@ with st.sidebar:
         st.markdown(f"**Concepts:** {concepts}")
     
     st.markdown("---")
-    if st.button("📥 Download Report", use_container_width=True):
+    if st.button("📥 Download Report", width="stretch"):
         st.switch_page("pages/2_🔍_Analysis.py")
 
 # Footer
