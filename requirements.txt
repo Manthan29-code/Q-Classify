@@ -1,0 +1,31 @@
+# Q-Classify - AI-Powered PDF Analyzer
+# Python Dependencies
+
+# Core Framework
+streamlit>=1.29.0
+
+# PDF Processing
+pdfplumber>=0.10.3              # Primary: Better table/layout handling
+PyPDF2>=3.0.1                   # Fallback: Simple text extraction
+
+# PDF Generation
+reportlab>=4.0.8                # Professional PDF report generation
+
+# AI/LLM Integration
+langchain>=0.1.0                # LLM orchestration framework
+langchain-google-genai>=0.0.6  # Google Gemini integration
+google-generativeai>=0.3.2     # Direct Gemini API access
+
+# Environment & Configuration
+python-dotenv>=1.0.0            # .env file management
+
+# Data Processing
+pandas>=2.1.4                   # Data manipulation for trends
+
+# Visualization
+plotly>=5.18.0                  # Interactive charts
+streamlit-agraph>=0.0.45        # Graph visualization for concept maps
+networkx>=3.2.1                 # Graph data structures
+
+# Optional Enhancements
+streamlit-option-menu>=0.3.6    # Custom navigation menus
