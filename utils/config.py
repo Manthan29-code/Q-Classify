@@ -2,7 +2,6 @@
 Q-Classify Configuration Module
 Handles session state and app configuration
 """
-
 import streamlit as st
 import os
 from pathlib import Path
