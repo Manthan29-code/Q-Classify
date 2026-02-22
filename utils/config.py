@@ -166,7 +166,7 @@ def restore_files_from_disk():
 def get_api_key():
     """Get Google API key with validation"""
     api_key = Config.GOOGLE_API_KEY
-    if not api_key or api_key == "your_gemini_api_key_here":
+    if not api_key:
         return None
     return api_key
 

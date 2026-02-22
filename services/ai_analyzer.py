@@ -417,7 +417,7 @@ Respond ONLY with JSON."""
     
     def is_configured(self) -> bool:
         """Check if the analyzer is properly configured"""
-        return bool(self.api_key and self.api_key != "your_gemini_api_key_here")
+        return bool(self.api_key)
 
 
 # Singleton instance
