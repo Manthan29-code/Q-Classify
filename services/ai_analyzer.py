@@ -67,86 +67,83 @@ class AIAnalyzer:
     
     def analyze_questions(
         self,
-        questions: List[str],
+        raw_text: str,
         syllabus_text: str,
         syllabus_chapters: Optional[List[Dict]] = None
     ) -> List[Dict[str, Any]]:
         """
-        Analyze questions and map them to syllabus chapters/concepts
-        
+        Extract all questions from raw PDF text and map them to syllabus chapters/concepts.
+        The LLM handles both extraction and analysis in a single pass.
+
         Args:
-            questions: List of question texts
+            raw_text: Raw text extracted from the question paper PDF
             syllabus_text: Full syllabus text
             syllabus_chapters: Optional pre-extracted chapter structure
-            
+
         Returns:
             List of analyzed questions with chapter, concepts, difficulty
         """
         from langchain_core.prompts import PromptTemplate
         from langchain_core.output_parsers import StrOutputParser
-        
-        # Create analysis prompt
+
         analysis_prompt = PromptTemplate(
-            input_variables=["syllabus", "questions"],
-            template="""You are an expert educational content analyzer. Analyze the following exam questions and map them to the provided syllabus.
+            input_variables=["syllabus", "raw_text"],
+            template="""You are an expert educational content analyzer.
+
+You are given the raw text of an exam question paper. Your job is to:
+1. Identify and extract EVERY question present in the text (including all sub-parts).
+2. Analyze each question against the provided syllabus.
 
 SYLLABUS:
 {syllabus}
 
-QUESTIONS TO ANALYZE:
-{questions}
+RAW QUESTION PAPER TEXT:
+{raw_text}
 
-For each question, provide analysis in the following JSON format:
+For every question found, respond with this JSON format:
 {{
     "questions": [
         {{
             "question_number": 1,
-            "question_text": "original question text",
+            "question_text": "full original question text, including sub-parts if any",
             "chapter": "Chapter name/number from syllabus",
             "concepts": ["concept1", "concept2"],
             "difficulty": "Easy|Medium|Hard",
-            "explanation": "Brief explanation of why this maps to this chapter and concepts"
+            "explanation": "Brief explanation of the mapping"
         }}
     ]
 }}
 
-IMPORTANT GUIDELINES:
-1. Chapter must match exactly or closely to a chapter/unit from the syllabus
-2. Concepts should be specific topics from the syllabus needed to solve the question
-3. Difficulty estimation:
+GUIDELINES:
+1. Extract ALL questions — do not skip any, regardless of format (MCQ, descriptive, numerical, etc.).
+2. Preserve the full question text exactly as it appears, including any option labels (a, b, c, d).
+3. Chapter must match exactly or closely to a chapter/unit from the syllabus.
+4. Concepts should be specific topics from the syllabus needed to answer the question.
+5. Difficulty:
    - Easy: Direct recall, single concept, straightforward application
-   - Medium: Multiple concepts, some analysis required, moderate application
-   - Hard: Complex reasoning, multiple concepts integration, deep understanding
-4. If a question doesn't clearly match any chapter, use "General" or the closest match
-5. List 1-4 most relevant concepts per question
+   - Medium: Multiple concepts, some analysis required
+   - Hard: Complex reasoning, deep understanding, multiple concept integration
+6. If a question doesn't match any chapter, use "General" or the closest match.
+7. List 1-4 most relevant concepts per question.
 
 Respond ONLY with the JSON object, no additional text."""
         )
-        
-        # Format questions for prompt
-        formatted_questions = "\n".join([
-            f"Q{i+1}: {q}" for i, q in enumerate(questions)
-        ])
-        
-        # Run analysis using LCEL
+
         try:
             chain = analysis_prompt | self.llm | StrOutputParser()
-            response = chain.invoke({"syllabus": syllabus_text, "questions": formatted_questions})
-            
-            # Parse JSON response
+            response = chain.invoke({"syllabus": syllabus_text, "raw_text": raw_text})
             results = self._parse_json_response(response)
             return results.get('questions', [])
-            
+
         except Exception as e:
-            # Return basic structure on error
             return [{
-                'question_number': i + 1,
-                'question_text': q,
+                'question_number': 1,
+                'question_text': 'Analysis failed',
                 'chapter': 'Analysis Error',
                 'concepts': [],
                 'difficulty': 'Medium',
                 'explanation': f'Error during analysis: {str(e)}'
-            } for i, q in enumerate(questions)]
+            }]
     
     def estimate_difficulty(self, question: str, syllabus_context: str) -> Dict[str, Any]:
         """

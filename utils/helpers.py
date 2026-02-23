@@ -115,38 +115,6 @@ def generate_report_filename() -> str:
     return f"QClassify_Report_{timestamp}.pdf"
 
 
-def parse_questions_from_text(text: str) -> List[str]:
-    """
-    Parse individual questions from question paper text
-    Uses common question patterns
-    """
-    questions = []
-    
-    # Common question patterns
-    patterns = [
-        r'Q\.?\s*\d+[.):]\s*(.+?)(?=Q\.?\s*\d+|$)',  # Q1. or Q.1) or Q1:
-        r'\d+[.):]\s*(.+?)(?=\d+[.):]|$)',  # 1. or 1) or 1:
-        r'(?:Question|Ques)\s*\d+[.):]\s*(.+?)(?=(?:Question|Ques)\s*\d+|$)',  # Question 1.
-    ]
-    
-    for pattern in patterns:
-        matches = re.findall(pattern, text, re.DOTALL | re.IGNORECASE)
-        if matches:
-            questions = [clean_text(q) for q in matches if len(q.strip()) > 10]
-            break
-    
-    # Fallback: split by newlines and filter
-    if not questions:
-        lines = text.split('\n')
-        for line in lines:
-            line = line.strip()
-            # Check if line looks like a question
-            if len(line) > 20 and ('?' in line or line[0].isdigit()):
-                questions.append(clean_text(line))
-    
-    return questions
-
-
 def create_chapter_mapping(syllabus_text: str) -> List[Dict[str, Any]]:
     """
     Extract chapter structure from syllabus text

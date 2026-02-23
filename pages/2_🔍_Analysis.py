@@ -11,7 +11,7 @@ import sys
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from utils.config import init_session_state, Config
-from utils.helpers import parse_questions_from_text, format_difficulty, clean_text
+from utils.helpers import format_difficulty, clean_text
 from services.ai_analyzer import ai_analyzer
 from services.pdf_generator import pdf_generator
 from components.header import render_page_header, render_api_warning
@@ -156,60 +156,29 @@ else:
         status_text = st.empty()
         error_container = st.empty()
         
-        all_questions = []
         all_analyzed = []
-        
-        # Step 1: Extract questions from all papers
-        status_text.text("📝 Extracting questions from papers...")
-        
-        for i, paper in enumerate(st.session_state.question_papers):
-            questions = parse_questions_from_text(paper['text'])
-            for q in questions:
-                all_questions.append({
-                    'text': q,
-                    'source': paper['name'],
-                    'year': paper['year']
-                })
-            progress_bar.progress((i + 1) / len(st.session_state.question_papers) * 0.3)
-        
-        if not all_questions:
-            st.error("❌ Could not extract questions from the papers. Please check the PDF format.")
-            st.session_state.is_processing = False
-            st.stop()
-        
-        st.info(f"📊 Found {len(all_questions)} questions across all papers")
-        
-        # Step 2: Analyze questions with AI
-        status_text.text("🤖 Analyzing questions with AI...")
-        
-        # Process in batches for better performance
-        batch_size = 10
-        question_texts = [q['text'] for q in all_questions]
         analysis_error = None
-        
-        for batch_start in range(0, len(question_texts), batch_size):
-            batch_end = min(batch_start + batch_size, len(question_texts))
-            batch = question_texts[batch_start:batch_end]
-            
+        total_papers = len(st.session_state.question_papers)
+
+        # Single step: LLM extracts and analyzes all questions per paper directly
+        for i, paper in enumerate(st.session_state.question_papers):
+            status_text.text(f"🤖 Analyzing '{paper['name']}' ({i + 1}/{total_papers})...")
+
             try:
-                with st.spinner(f"🤖 Analyzing batch {batch_start//batch_size + 1}..."):
+                with st.spinner(f"🤖 Analyzing '{paper['name']}'..."):
                     analysis_results = ai_analyzer.analyze_questions(
-                        batch,
+                        paper['text'],
                         st.session_state.syllabus_text
                     )
-                
-                # Merge with source info
-                for j, result in enumerate(analysis_results):
-                    idx = batch_start + j
-                    if idx < len(all_questions):
-                        result['source'] = all_questions[idx]['source']
-                        result['year'] = all_questions[idx]['year']
-                        result['question'] = result.get('question_text', all_questions[idx]['text'])
-                        all_analyzed.append(result)
-                
+
+                for result in analysis_results:
+                    result['source'] = paper['name']
+                    result['year'] = paper['year']
+                    result['question'] = result.get('question_text', '')
+                    all_analyzed.append(result)
+
             except Exception as e:
                 error_str = str(e)
-                # Parse specific error types
                 if "429" in error_str or "quota" in error_str.lower() or "rate" in error_str.lower():
                     analysis_error = "🚫 **API Quota Exceeded**: Your API usage limit has been reached. Please wait a few minutes or check your Google Cloud quota."
                 elif "401" in error_str or "403" in error_str or "authentication" in error_str.lower() or "invalid" in error_str.lower():
@@ -220,14 +189,20 @@ else:
                     analysis_error = "🌐 **Connection Error**: Unable to reach the API. Please check your internet connection."
                 else:
                     analysis_error = f"❌ **Analysis Error**: {error_str}"
-                
+
                 st.session_state.last_error = analysis_error
                 break
-            
-            # Update progress
-            progress = 0.3 + (batch_end / len(question_texts)) * 0.7
-            progress_bar.progress(progress)
-            status_text.text(f"🤖 Analyzed {batch_end}/{len(question_texts)} questions...")
+
+            progress_bar.progress((i + 1) / total_papers)
+            status_text.text(f"✅ '{paper['name']}' done — {len(all_analyzed)} questions so far...")
+
+        if not all_analyzed and not analysis_error:
+            st.error("❌ No questions found in the uploaded papers. Please check the PDF content.")
+            st.session_state.is_processing = False
+            st.stop()
+
+        if all_analyzed:
+            st.info(f"📊 Extracted and analyzed {len(all_analyzed)} questions across all papers")
         
         # Handle error with retry option
         if analysis_error:
