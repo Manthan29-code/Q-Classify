@@ -5,6 +5,7 @@ Main Streamlit Application - Landing Page
 
 import streamlit as st
 from pathlib import Path
+from utils.config import render_api_key_sidebar
 
 # Page configuration
 st.set_page_config(
@@ -285,7 +286,10 @@ st.markdown("""
 </div>
 """, unsafe_allow_html=True)
 
-# Sidebar
+# Sidebar - API Key Settings
+render_api_key_sidebar()
+
+# Sidebar - Navigation
 with st.sidebar:
     st.markdown("### 🎓 Q-Classify")
     st.markdown("---")

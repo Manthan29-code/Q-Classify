@@ -10,7 +10,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.config import init_session_state, Config, is_api_configured, restore_files_from_disk, clear_session_state
+from utils.config import init_session_state, Config, is_api_configured, restore_files_from_disk, clear_session_state, render_api_key_sidebar
 from utils.helpers import extract_year_from_filename, format_file_size, clean_text
 from services.pdf_extractor import pdf_extractor
 from components.header import render_page_header, render_api_warning
@@ -264,7 +264,10 @@ with col2:
         st.button("🚀 Start Analysis", width="stretch", disabled=True)
         st.caption("Upload syllabus and at least one question paper to proceed")
 
-# Clear data button
+# Sidebar - API Key Settings
+render_api_key_sidebar()
+
+# Sidebar - Options
 with st.sidebar:
     st.markdown("### ⚙️ Options")
     if st.button("🗑️ Clear All Data"):

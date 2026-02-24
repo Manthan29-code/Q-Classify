@@ -10,7 +10,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.config import init_session_state
+from utils.config import init_session_state, render_api_key_sidebar
 from utils.helpers import calculate_concept_frequency, calculate_chapter_frequency
 from services.ai_analyzer import ai_analyzer
 from components.header import render_page_header
@@ -334,7 +334,10 @@ with col2:
         elif easy_pct > 50:
             st.success("✅ Many straightforward questions. Good coverage of basics.")
 
-# Sidebar
+# Sidebar - API Key Settings
+render_api_key_sidebar()
+
+# Sidebar - Stats
 with st.sidebar:
     st.markdown("### 📊 Quick Stats")
     st.metric("Questions Analyzed", len(questions_data))

@@ -15,7 +15,7 @@ def render_header(title: str = "Q-Classify", subtitle: str = None, show_api_stat
         subtitle: Optional subtitle
         show_api_status: Whether to show API configuration status
     """
-    from utils.config import is_api_configured
+    from utils.config import is_api_configured, get_api_key_source
     
     # Header container
     col1, col2 = st.columns([3, 1])
@@ -34,11 +34,13 @@ def render_header(title: str = "Q-Classify", subtitle: str = None, show_api_stat
     with col2:
         if show_api_status:
             if is_api_configured():
-                st.markdown("""
+                source = get_api_key_source()
+                source_label = "sidebar" if source == "sidebar" else ".env"
+                st.markdown(f"""
                 <div style="text-align: right; padding: 10px;">
                     <span style="background: #2ECC71; color: white; padding: 5px 12px; 
                            border-radius: 15px; font-size: 0.8rem;">
-                        ✓ API Connected
+                        ✓ API Connected ({source_label})
                     </span>
                 </div>
                 """, unsafe_allow_html=True)
@@ -81,12 +83,16 @@ def render_api_warning():
         st.warning("""
         ⚠️ **API Key Not Configured**
         
-        Please add your Google Gemini API key to the `.env` file:
-        ```
-        GOOGLE_API_KEY=your_actual_api_key
-        ```
+        Please add your Google Gemini API key using one of these methods:
         
-        Get your API key from [Google AI Studio](https://makersuite.google.com/app/apikey)
+        **Option 1: Sidebar (Recommended for deployed apps)**
+        - Look for the "🔑 API Settings" section in the sidebar
+        - Enter your API key and click "Save Key"
+        
+        **Option 2: Environment file (For local development)**
+        - Add to your `.env` file: `GOOGLE_API_KEY=your_api_key`
+        
+        [Get your API key from Google AI Studio](https://aistudio.google.com/app/apikey)
         """)
         return False
     return True

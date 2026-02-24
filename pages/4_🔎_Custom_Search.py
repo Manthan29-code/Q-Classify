@@ -10,7 +10,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.config import init_session_state
+from utils.config import init_session_state, render_api_key_sidebar
 from services.ai_analyzer import ai_analyzer
 from components.header import render_page_header
 from components.footer import render_compact_footer
@@ -343,7 +343,10 @@ with col3:
             st.session_state['quick_filter'] = str(latest_year)
             st.rerun()
 
-# Sidebar
+# Sidebar - API Key Settings
+render_api_key_sidebar()
+
+# Sidebar - Stats
 with st.sidebar:
     st.markdown("### 📊 Search Stats")
     st.metric("Total Questions", len(questions_data))

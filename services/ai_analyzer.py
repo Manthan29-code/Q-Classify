@@ -34,6 +34,11 @@ class AIAnalyzer:
         self.temperature = temperature
         self._llm = None
     
+    def update_api_key(self, api_key: str):
+        """Update the API key and reset LLM instance for re-initialization"""
+        self.api_key = api_key
+        self._llm = None  # Force re-initialization with new key
+    
     def get_current_model(self) -> str:
         """Get the currently configured model name"""
         return self.model_name
@@ -47,16 +52,31 @@ class AIAnalyzer:
     
     def _initialize_llm(self):
         """Initialize the Gemini LLM through LangChain"""
-        if not self.api_key:
-            raise ValueError("Google API key not found. Please set GOOGLE_API_KEY in .env file")
+        from utils.config import get_api_key, get_selected_model, get_selected_temperature
+        
+        # Get API key - prefer instance variable, then centralized config
+        api_key = self.api_key
+        if not api_key:
+            api_key = get_api_key()
+        
+        if not api_key:
+            raise ValueError(
+                "Google API key not found. Please either:\n"
+                "1. Add your API key in the sidebar under '🔑 API Key', or\n"
+                "2. Set GOOGLE_API_KEY in your .env file"
+            )
+        
+        # Get model and temperature from session state or .env
+        model_name = self.model_name or get_selected_model()
+        temperature = self.temperature if self.temperature is not None else get_selected_temperature()
         
         try:
             from langchain_google_genai import ChatGoogleGenerativeAI
             
             return ChatGoogleGenerativeAI(
-                model=self.model_name,
-                google_api_key=self.api_key,
-                temperature=self.temperature,
+                model=model_name,
+                google_api_key=api_key,
+                temperature=temperature,
                 convert_system_message_to_human=True
             )
         except ImportError:

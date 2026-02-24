@@ -10,7 +10,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.config import init_session_state, Config
+from utils.config import init_session_state, Config, render_api_key_sidebar
 from utils.helpers import format_difficulty, clean_text
 from services.ai_analyzer import ai_analyzer
 from services.pdf_generator import pdf_generator
@@ -405,7 +405,10 @@ if st.session_state.analysis_complete and st.session_state.questions_data:
             width="stretch"
         )
 
-# Sidebar
+# Sidebar - API Key Settings
+render_api_key_sidebar()
+
+# Sidebar - Stats
 with st.sidebar:
     st.markdown("### 📊 Quick Stats")
     if st.session_state.questions_data:

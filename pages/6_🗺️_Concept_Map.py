@@ -10,7 +10,7 @@ import sys
 # Add parent directory to path for imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
-from utils.config import init_session_state, is_api_configured
+from utils.config import init_session_state, is_api_configured, render_api_key_sidebar
 from services.ai_analyzer import ai_analyzer
 from components.header import render_page_header, render_api_warning
 from components.footer import render_compact_footer
@@ -479,7 +479,10 @@ with col2:
         </div>
         """, unsafe_allow_html=True)
 
-# Sidebar
+# Sidebar - API Key Settings
+render_api_key_sidebar()
+
+# Sidebar - Stats
 with st.sidebar:
     st.markdown("### 📊 Graph Stats")
     
