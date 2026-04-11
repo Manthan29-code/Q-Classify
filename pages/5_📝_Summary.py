@@ -213,7 +213,7 @@ if st.session_state.syllabus_summary:
             
             for diff, count in difficulties.items():
                 pct = round(count / total * 100) if total > 0 else 0
-                color = diff_colors[diff]
+                color = diff_colors.get(diff, '#95A5A6')
                 st.markdown(f"""
                 <div style="margin: 10px 0;">
                     <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
