@@ -49,8 +49,7 @@ Thumbs.db
 *.log
 
 #prompt 
-*.txt
-
-
+extraPackge.txt
+roadmap.txt
 
 special.md
