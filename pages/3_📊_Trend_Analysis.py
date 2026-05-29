@@ -121,71 +121,68 @@ with col4:
 st.markdown("---")
 
 # ==================== CONCEPT FREQUENCY ====================
-col1, col2 = st.columns(2)
+st.markdown("### 🎯 Most Tested Concepts")
 
-with col1:
-    st.markdown("### 🎯 Most Tested Concepts")
-    
-    top_concepts = trend_data.get('top_concepts', [])[:15]
-    
-    if top_concepts:
-        # Create chart data
-        import plotly.express as px
-        import pandas as pd
-        
-        df = pd.DataFrame(top_concepts, columns=['Concept', 'Count'])
-        
-        fig = px.bar(
-            df,
-            x='Count',
-            y='Concept',
-            orientation='h',
-            color='Count',
-            color_continuous_scale=['#4A90D9', '#9B59B6', '#2ECC71']
-        )
-        
-        fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font_color='#E0E0E0',
-            showlegend=False,
-            yaxis={'categoryorder': 'total ascending'},
-            height=400
-        )
-        
-        st.plotly_chart(fig, width="stretch")
-    else:
-        st.info("No concept data available")
+top_concepts = trend_data.get('top_concepts', [])[:15]
 
-with col2:
-    st.markdown("### 📚 Chapter Distribution")
+if top_concepts:
+    # Create chart data
+    import plotly.express as px
+    import pandas as pd
     
-    top_chapters = trend_data.get('top_chapters', [])[:10]
+    df = pd.DataFrame(top_concepts, columns=['Concept', 'Count'])
     
-    if top_chapters:
-        import plotly.express as px
-        import pandas as pd
-        
-        df = pd.DataFrame(top_chapters, columns=['Chapter', 'Questions'])
-        
-        fig = px.pie(
-            df,
-            values='Questions',
-            names='Chapter',
-            hole=0.4,
-            color_discrete_sequence=['#4A90D9', '#9B59B6', '#2ECC71', '#F39C12', '#E74C3C']
-        )
-        
-        fig.update_layout(
-            plot_bgcolor='rgba(0,0,0,0)',
-            paper_bgcolor='rgba(0,0,0,0)',
-            font_color='#E0E0E0',
-            height=400
-        )
-        
-        st.plotly_chart(fig, width="stretch")
-    else:
-        st.info("No chapter data available")
+    fig = px.bar(
+        df,
+        x='Count',
+        y='Concept',
+        orientation='h',
+        color='Count',
+        color_continuous_scale=['#4A90D9', '#9B59B6', '#2ECC71']
+    )
+    
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='#E0E0E0',
+        showlegend=False,
+        yaxis={'categoryorder': 'total ascending'},
+        height=400
+    )
+    
+    st.plotly_chart(fig, width="stretch")
+else:
+    st.info("No concept data available")
+
+
+st.markdown("### 📚 Chapter Distribution")
+
+top_chapters = trend_data.get('top_chapters', [])[:10]
+
+if top_chapters:
+    import plotly.express as px
+    import pandas as pd
+    
+    df = pd.DataFrame(top_chapters, columns=['Chapter', 'Questions'])
+    
+    fig = px.pie(
+        df,
+        values='Questions',
+        names='Chapter',
+        hole=0.4,
+        color_discrete_sequence=['#4A90D9', '#9B59B6', '#2ECC71', '#F39C12', '#E74C3C']
+    )
+    
+    fig.update_layout(
+        plot_bgcolor='rgba(0,0,0,0)',
+        paper_bgcolor='rgba(0,0,0,0)',
+        font_color='#E0E0E0',
+        height=400
+    )
+    
+    st.plotly_chart(fig, width="stretch")
+else:
+    st.info("No chapter data available")
 
 # ==================== DIFFICULTY DISTRIBUTION ====================
 st.markdown("---")

@@ -12,8 +12,8 @@ To add a new model:
 # Available Gemini Models for selection
 AVAILABLE_MODELS = [
     {
-        "id": "gemini-2.5-flash",
-        "name": "Gemini 2.5 Flash",
+        "id": "gemini-3.1-flash-lite",
+        "name": "gemini-3.1-flash-lite",
         "description": "Latest, fast & intelligent",
         "recommended": True
     },
@@ -45,7 +45,7 @@ AVAILABLE_MODELS = [
 ]
 
 # Default model (used when no selection made)
-DEFAULT_MODEL = "gemini-2.5-flash"
+DEFAULT_MODEL = "gemini-3.1-flash-lite"
 
 # Default temperature
 DEFAULT_TEMPERATURE = 0.3
