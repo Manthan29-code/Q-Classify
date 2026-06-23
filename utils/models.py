@@ -11,36 +11,44 @@ To add a new model:
 
 # Available Gemini Models for selection
 AVAILABLE_MODELS = [
+    # Gemini 3.x series (latest generation)
     {
-        "id": "gemini-3.1-flash-lite",
-        "name": "gemini-3.1-flash-lite",
-        "description": "Latest, fast & intelligent",
-        "recommended": True
+        "id": "gemini-3.5-flash",        # Stable model ID [web:11][web:14][web:17][web:20]
+        "name": "Gemini 3.5 Flash",
+        "description": "Most intelligent for agentic & coding tasks (stable).",
+        "recommended": True,
     },
     {
-        "id": "gemini-2.5-pro",
+        "id": "gemini-3.1-pro",          # Stable 3.1 Pro ID [web:12][web:15][web:18]
+        "name": "Gemini 3.1 Pro",
+        "description": "Advanced intelligence, complex problem solving, strong reasoning (preview).",
+    },
+    {
+        "id": "gemini-3-flash-preview",  # Older preview identifier; still used in some guides [web:11][web:20]
+        "name": "Gemini 3 Flash",
+        "description": "Frontier-class performance at lower cost (preview).",
+    },
+    {
+        "id": "gemini-3.1-flash-lite",   # 3.1 Flash-Lite ID from model listings [web:1]
+        "name": "Gemini 3.1 Flash-Lite",
+        "description": "Fastest & most cost-efficient Gemini 3 model, great for high-volume use.",
+    },
+
+    # Gemini 2.5 family (still widely supported)
+    {
+        "id": "gemini-2.5-pro",          # 2.5 Pro ID [web:3][web:6][web:9]
         "name": "Gemini 2.5 Pro",
-        "description": "Most capable, best for complex tasks"
+        "description": "Most advanced 2.5 model for complex reasoning and coding.",
     },
     {
-        "id": "gemini-2.0-flash",
-        "name": "Gemini 2.0 Flash",
-        "description": "Fast with multimodal support"
+        "id": "gemini-2.5-flash",        # 2.5 Flash ID [web:3][web:6][web:9]
+        "name": "Gemini 2.5 Flash",
+        "description": "Best price-performance for low-latency, high-volume tasks that need reasoning.",
     },
     {
-        "id": "gemini-1.5-pro",
-        "name": "Gemini 1.5 Pro",
-        "description": "1M token context, high accuracy"
-    },
-    {
-        "id": "gemini-1.5-flash",
-        "name": "Gemini 1.5 Flash",
-        "description": "Balanced speed & quality"
-    },
-    {
-        "id": "gemini-1.5-flash-8b",
-        "name": "Gemini 1.5 Flash-8B",
-        "description": "Fastest, most economical"
+        "id": "gemini-2.5-flash-lite",   # 2.5 Flash-Lite ID [web:13][web:16][web:19]
+        "name": "Gemini 2.5 Flash-Lite",
+        "description": "Fastest & most budget-friendly 2.5 multimodal model.",
     },
 ]
 
